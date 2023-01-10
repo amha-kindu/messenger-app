@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 OutlineInputBorder getInputBorder(bool noError,
@@ -16,4 +17,10 @@ Size getWidgetSize(GlobalKey globalKey) {
       globalKey.currentContext?.findRenderObject() as RenderBox;
 
   return renderBox.size;
+}
+
+void userChangeListener(User? user) {
+  if (user != null) {
+    print(user.uid);
+  }
 }

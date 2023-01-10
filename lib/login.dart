@@ -1,5 +1,7 @@
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:messenger_app/main.dart';
 import 'package:messenger_app/shared/components/form.dart';
 import 'package:messenger_app/shared/helper_functions.dart';
 
@@ -19,12 +21,17 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  void signInUser(String email, String password) async {
+    await MyApp.authetication
+        .signInWithEmailAndPassword(email: email, password: password);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Center(child: Text('Login')),
-        ),
+        // appBar: AppBar(
+        //   title: const Center(child: Text('Login')),
+        // ),
         body: Padding(
           padding: const EdgeInsets.only(top: 40),
           child: CustomForm(children: [
@@ -113,15 +120,26 @@ class _LoginPageState extends State<LoginPage> {
                 verticalPadding: 10.0,
                 child: Center(
                   child: TextButton(
-                      onPressed: () {
-                        bool validEmail =
-                            EmailValidator.validate(emailController.text);
-                        if (!validEmail) {
-                          setState(() {
-                            emailErrorMessage = 'Invalid email address';
-                          });
-                        } else {
-                          emailErrorMessage = '';
+                      onPressed: () async {
+                        try {
+                          await MyApp.authetication
+                              .signInWithEmailAndPassword(
+                                  email: emailController.text,
+                                  password: passwordController.text)
+                              .then((_) =>
+                                  Navigator.pushReplacementNamed(context, '/'));
+                        } on FirebaseAuthException catch (error) {
+                          if (error.code == 'invalid-email') {
+                            setState(() {
+                              emailErrorMessage = 'Invalid email address';
+                            });
+                          } else if (error.code == 'wrong-password' ||
+                              error.code == 'user-not-found') {
+                            setState(() {
+                              emailErrorMessage =
+                                  'Incorrect password or email provided';
+                            });
+                          }
                         }
                       },
                       child: Container(
